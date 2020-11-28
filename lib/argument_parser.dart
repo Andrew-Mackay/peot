@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import 'package:args/args.dart';
 
 Arguments parseArguments(List<String> arguments) {
   final parser = ArgParser();
 
   // TODO add optional frequency argument (default monthly)
+  // TODO make from/to optional
+  // TODO make psalm config optional
   var args = parser.parse(arguments).rest;
   validateArguments(args);
   // project psalm_config from to,
   return Arguments(
-    args[0],
+    Directory(args[0]),
     args[1],
     DateTime.parse(args[2]),
     DateTime.parse(args[3]),
@@ -22,10 +26,11 @@ void validateArguments(List<String> arguments) {
   }
   // TODO check if paths exist
   // TODO check date format
+  // TODO check to is after from (if provided)
 }
 
 class Arguments {
-  final String projectLocation;
+  final Directory projectLocation;
   final String psalmConfigLocation;
   final DateTime from;
   final DateTime to;
