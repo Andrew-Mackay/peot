@@ -4,40 +4,43 @@ import './git_commit_parser.dart' as git_commit_parser;
 
 // TODO copy directory across?
 // TODO use isolates?
-Future<Map<DateTime, int>> getPsalmErrorsOverTime(Arguments arguments) async {
+Future<Map<DateTime, int>> getPsalmErrorsOverTime(
+    Directory projectLocation,
+    String psalmConfigLocation,
+    DateTime from,
+    DateTime to,
+    Duration frequency) async {
   var psalmErrorsOverTime = <DateTime, int>{};
 
-  await checkoutMasterBranch(arguments.projectLocation);
+  await checkoutMasterBranch(projectLocation);
 
-  var commits = await getCommits(arguments.from, arguments.to,
-      arguments.frequency, arguments.projectLocation);
+  var commits = await getCommits(from, to, frequency, projectLocation);
   print('Found ${commits.length} commits\n');
 
   for (var commit in commits) {
-    print('Checking out commit ${commit.hash}');
-    await checkoutCommit(commit.hash, arguments.projectLocation);
+    print('Checking out commit ${commit.hash} with date ${commit.date}');
+    await checkoutCommit(commit.hash, projectLocation);
 
     print('Running composer install');
-    await composerInstall(arguments.projectLocation);
+    await composerInstall(projectLocation);
 
     print('Installing psalm');
-    await installPsalm(arguments.projectLocation);
+    await installPsalm(projectLocation);
 
     // TODO --diff flag?
     print('Running psalm');
-    var numberOfErrors = await runPsalm(
-        arguments.projectLocation, arguments.psalmConfigLocation);
+    var numberOfErrors = await runPsalm(projectLocation, psalmConfigLocation);
     print('Number of errors: $numberOfErrors');
 
     psalmErrorsOverTime[commit.date] = numberOfErrors;
 
-    await resetGitBranch(arguments.projectLocation);
+    await resetGitBranch(projectLocation);
 
     // TODO clear cache?
     print('\n');
   }
 
-  await checkoutMasterBranch(arguments.projectLocation);
+  await checkoutMasterBranch(projectLocation);
 
   return psalmErrorsOverTime;
 }
@@ -78,14 +81,24 @@ Future<git_commit_parser.GitCommit> getNearestGitCommit(
     throw Exception(
         'git log returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
+  if (result.stdout.toString().isEmpty) {
+    throw NoCommitsException();
+  }
   return git_commit_parser.parse(result.stdout);
 }
+
+class NoCommitsException implements Exception {}
 
 Future<List<git_commit_parser.GitCommit>> getCommits(DateTime from, DateTime to,
     Duration frequency, Directory projectLocation) async {
   var commits = <git_commit_parser.GitCommit>[];
   for (var date = from; date.isBefore(to); date = date.add(frequency)) {
-    commits.add(await getNearestGitCommit(projectLocation, date));
+    try {
+      var nearestGitCommit = await getNearestGitCommit(projectLocation, date);
+      commits.add(nearestGitCommit);
+    } on NoCommitsException {
+      continue;
+    }
   }
   return commits;
 }
