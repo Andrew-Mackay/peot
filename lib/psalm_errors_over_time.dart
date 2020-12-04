@@ -2,11 +2,12 @@ import 'package:psalm_errors_over_time/argument_parser.dart';
 import 'dart:io';
 import './git_commit_parser.dart' as git_commit_parser;
 
-// TODO put branch back to current state
 // TODO copy directory across?
-// TODO collect all commits using isolates?
+// TODO use isolates?
 Future<Map<DateTime, int>> getPsalmErrorsOverTime(Arguments arguments) async {
   var psalmErrorsOverTime = <DateTime, int>{};
+
+  await checkoutMasterBranch(arguments.projectLocation);
 
   var commits = await getCommits(arguments.from, arguments.to,
       arguments.frequency, arguments.projectLocation);
@@ -16,11 +17,11 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(Arguments arguments) async {
     print('Checking out commit ${commit.hash}');
     await checkoutCommit(commit.hash, arguments.projectLocation);
 
-    // print('Installing psalm');
-    // await installPsalm(arguments.projectLocation);
-
     print('Running composer install');
     await composerInstall(arguments.projectLocation);
+
+    print('Installing psalm');
+    await installPsalm(arguments.projectLocation);
 
     // TODO --diff flag?
     print('Running psalm');
@@ -30,16 +31,33 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(Arguments arguments) async {
 
     psalmErrorsOverTime[commit.date] = numberOfErrors;
 
+    await resetGitBranch(arguments.projectLocation);
+
     // TODO clear cache?
-    // copy across config (if provided)
-    // run psalm
-    // parse results
-    // store results
     print('\n');
   }
 
+  await checkoutMasterBranch(arguments.projectLocation);
+
   return psalmErrorsOverTime;
-  // TODO put branch back to original state
+}
+
+Future<void> checkoutMasterBranch(Directory projectLocation) async {
+  var result = await Process.run('git', ['checkout', 'master'],
+      workingDirectory: projectLocation.path);
+  if (result.exitCode != 0) {
+    throw Exception(
+        'git checkout master returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  }
+}
+
+Future<void> resetGitBranch(Directory projectLocation) async {
+  var result = await Process.run('git', ['reset', '--hard'],
+      workingDirectory: projectLocation.path);
+  if (result.exitCode != 0) {
+    throw Exception(
+        'git reset --hard returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  }
 }
 
 Future<git_commit_parser.GitCommit> getNearestGitCommit(
@@ -115,7 +133,7 @@ Future<void> composerInstall(Directory projectLocation) async {
 
 Future<void> installPsalm(Directory projectLocation) async {
   var result = await Process.run(
-      'composer', ['require', '--dev', 'vimeo/psalm'],
+      'composer', ['require', '--dev', 'psalm/phar:4.1.1'],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -127,7 +145,7 @@ Future<void> installPsalm(Directory projectLocation) async {
 Future<int> runPsalm(
     Directory projectLocation, String psalmConfigLocation) async {
   var result = await Process.run(
-      './vendor/bin/psalm',
+      './vendor/bin/psalm.phar',
       [
         '--config=$psalmConfigLocation',
         '--ignore-baseline',
