@@ -1,10 +1,10 @@
 import 'dart:io';
 
-Future<void> branch(String branch, Directory projectLocation) async {
+Future<void> checkoutBranch(String branch, Directory projectLocation) async {
   await _checkout(branch, projectLocation);
 }
 
-Future<void> commit(String commit, Directory projectLocation) async {
+Future<void> checkoutCommit(String commit, Directory projectLocation) async {
   await _checkout(commit, projectLocation);
 }
 

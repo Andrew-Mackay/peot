@@ -15,14 +15,14 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     Duration frequency) async {
   var psalmErrorsOverTime = <DateTime, int>{};
 
-  await git_checkout.branch('master', projectLocation);
+  await git_checkout.checkoutBranch('master', projectLocation);
 
   var commits = await git.getCommits(from, to, frequency, projectLocation);
   print('Found ${commits.length} commits\n');
 
   for (var commit in commits) {
     print('Checking out commit ${commit.hash} with date ${commit.date}');
-    await git_checkout.commit(commit.hash, projectLocation);
+    await git_checkout.checkoutCommit(commit.hash, projectLocation);
 
     print('Running composer install');
     await composer.install(projectLocation);
@@ -43,7 +43,7 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     print('\n');
   }
 
-  await git_checkout.branch('master', projectLocation);
+  await git_checkout.checkoutBranch('master', projectLocation);
 
   return psalmErrorsOverTime;
 }
