@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import './git_commit_parser.dart' as git_commit_parser;
-
+import 'git_commit.dart';
 
 Future<void> checkoutMasterBranch(Directory projectLocation) async {
   var result = await Process.run('git', ['checkout', 'master'],
@@ -21,7 +20,7 @@ Future<void> resetGitBranch(Directory projectLocation) async {
   }
 }
 
-Future<git_commit_parser.GitCommit> getNearestGitCommit(
+Future<GitCommit> _getNearestGitCommit(
     Directory projectLocation, DateTime date) async {
   var result = await Process.run(
       'git',
@@ -42,37 +41,23 @@ Future<git_commit_parser.GitCommit> getNearestGitCommit(
   if (result.stdout.toString().isEmpty) {
     throw NoCommitsException();
   }
-  return git_commit_parser.parse(result.stdout);
+  return GitCommit.fromStdOut(result.stdout);
 }
 
 class NoCommitsException implements Exception {}
 
-Future<List<git_commit_parser.GitCommit>> getCommits(DateTime from, DateTime to,
+Future<List<GitCommit>> getCommits(DateTime from, DateTime to,
     Duration frequency, Directory projectLocation) async {
-  var commits = <git_commit_parser.GitCommit>[];
+  var commits = <GitCommit>[];
   for (var date = from; date.isBefore(to); date = date.add(frequency)) {
     try {
-      var nearestGitCommit = await getNearestGitCommit(projectLocation, date);
+      var nearestGitCommit = await _getNearestGitCommit(projectLocation, date);
       commits.add(nearestGitCommit);
     } on NoCommitsException {
       continue;
     }
   }
   return commits;
-}
-
-Future<void> gitStatus(Directory projectLocation) async {
-  var result = await Process.run(
-      'git',
-      [
-        'status',
-      ],
-      workingDirectory: projectLocation.path);
-  if (result.exitCode != 0) {
-    throw Exception(
-        'git checkout returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
-  }
-  print(result.stdout);
 }
 
 Future<void> checkoutCommit(String hash, Directory projectLocation) async {

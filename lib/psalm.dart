@@ -15,7 +15,7 @@ Future<int> run(
   if (result.exitCode == 0) {
     return 0;
   } else if (result.exitCode == 1) {
-    return numberOfErrosFromPsalmOutput(
+    return _numberOfErrosFromPsalmOutput(
         result.stdout.toString()); // TODO parse and return real number
   } else {
     throw Exception(
@@ -23,7 +23,7 @@ Future<int> run(
   }
 }
 
-int numberOfErrosFromPsalmOutput(String psalmOutput) {
+int _numberOfErrosFromPsalmOutput(String psalmOutput) {
   // TODO make once instead of every call
   var regExp = RegExp(r'[0-9]+ errors found');
   var match = regExp.firstMatch(psalmOutput);
