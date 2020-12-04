@@ -1,4 +1,5 @@
 import 'package:psalm_errors_over_time/argument_parser.dart';
+import 'package:psalm_errors_over_time/csv_writer.dart' as csv_writer;
 import 'package:psalm_errors_over_time/psalm_errors_over_time.dart'
     as psalm_errors_over_time;
 
@@ -17,5 +18,6 @@ Future<void> main(List<String> arguments) async {
           args.mainBranch);
 
   print(numberOfErrorsOverTime);
-  // TODO output as csv (take csv path)
+  // TODO take csv path as arg
+  await csv_writer.writePsalmErrorsOverTimeToCSV(numberOfErrorsOverTime);
 }
