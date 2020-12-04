@@ -28,6 +28,9 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     print('Running composer install');
     await composer.install(projectLocation);
 
+    print('Installing composer-bin-plugin');
+    await composer.installComposerBinPlugin(projectLocation);
+
     print('Installing psalm');
     await composer.installPsalm(projectLocation);
 
@@ -39,6 +42,8 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     psalmErrorsOverTime[commit.date] = numberOfErrors;
 
     await git.resetGitBranch(projectLocation);
+    await composer.removeComposerBinPlugin(projectLocation);
+    await composer.removeBrokenSymLinks(projectLocation);
 
     // TODO clear cache?
     print('\n');

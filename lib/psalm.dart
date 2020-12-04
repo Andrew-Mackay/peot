@@ -3,7 +3,7 @@ import 'dart:io';
 Future<int> run(
     Directory projectLocation, String psalmConfigLocation) async {
   var result = await Process.run(
-      './vendor/bin/psalm.phar',
+      './vendor-bin/errors_over_time/vendor/vimeo/psalm/psalm',
       [
         '--config=$psalmConfigLocation',
         '--ignore-baseline',
