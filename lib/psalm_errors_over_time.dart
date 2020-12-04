@@ -5,36 +5,40 @@ import './git_commit_parser.dart' as git_commit_parser;
 // TODO put branch back to current state
 // TODO copy directory across?
 // TODO collect all commits using isolates?
-Future<void> getPsalmErrorsOverTime(Arguments arguments) async {
-  for (var date = arguments.from;
-      date.isBefore(arguments.to);
-      date = date.add(arguments.frequency)) {
-    print('Date: $date');
+Future<Map<DateTime, int>> getPsalmErrorsOverTime(Arguments arguments) async {
+  var psalmErrorsOverTime = <DateTime, int>{};
 
-    var commit = await getNearestGitCommit(arguments.projectLocation, date);
-    print('Got nearest commit ${commit.hash} ${commit.date}');
+  var commits = await getCommits(arguments.from, arguments.to,
+      arguments.frequency, arguments.projectLocation);
+  print('Found ${commits.length} commits\n');
 
+  for (var commit in commits) {
+    print('Checking out commit ${commit.hash}');
     await checkoutCommit(commit.hash, arguments.projectLocation);
-    print('Checked out commit ${commit.hash}');
 
+    // print('Installing psalm');
     // await installPsalm(arguments.projectLocation);
-    // print('installed psalm');
 
+    print('Running composer install');
     await composerInstall(arguments.projectLocation);
-    print('Ran composer install');
-
 
     // TODO --diff flag?
-    var numberOfErrors = await runPsalm(arguments.projectLocation, arguments.psalmConfigLocation);
+    print('Running psalm');
+    var numberOfErrors = await runPsalm(
+        arguments.projectLocation, arguments.psalmConfigLocation);
     print('Number of errors: $numberOfErrors');
+
+    psalmErrorsOverTime[commit.date] = numberOfErrors;
+
     // TODO clear cache?
     // copy across config (if provided)
     // run psalm
     // parse results
     // store results
-    break; // TODO remove
     print('\n');
   }
+
+  return psalmErrorsOverTime;
   // TODO put branch back to original state
 }
 
@@ -57,6 +61,15 @@ Future<git_commit_parser.GitCommit> getNearestGitCommit(
         'git log returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
   return git_commit_parser.parse(result.stdout);
+}
+
+Future<List<git_commit_parser.GitCommit>> getCommits(DateTime from, DateTime to,
+    Duration frequency, Directory projectLocation) async {
+  var commits = <git_commit_parser.GitCommit>[];
+  for (var date = from; date.isBefore(to); date = date.add(frequency)) {
+    commits.add(await getNearestGitCommit(projectLocation, date));
+  }
+  return commits;
 }
 
 Future<void> gitStatus(Directory projectLocation) async {
@@ -88,7 +101,7 @@ Future<void> checkoutCommit(String hash, Directory projectLocation) async {
 }
 
 Future<void> composerInstall(Directory projectLocation) async {
-    var result = await Process.run(
+  var result = await Process.run(
       'composer',
       [
         'install',
@@ -100,15 +113,9 @@ Future<void> composerInstall(Directory projectLocation) async {
   }
 }
 
-
 Future<void> installPsalm(Directory projectLocation) async {
-    var result = await Process.run(
-      'composer',
-      [
-        'require',
-        '--dev',
-        'vimeo/psalm'
-      ],
+  var result = await Process.run(
+      'composer', ['require', '--dev', 'vimeo/psalm'],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -117,8 +124,9 @@ Future<void> installPsalm(Directory projectLocation) async {
   print(result.stdout);
 }
 
-Future<int> runPsalm(Directory projectLocation, String psalmConfigLocation) async {
-    var result = await Process.run(
+Future<int> runPsalm(
+    Directory projectLocation, String psalmConfigLocation) async {
+  var result = await Process.run(
       './vendor/bin/psalm',
       [
         '--config=$psalmConfigLocation',
@@ -131,7 +139,8 @@ Future<int> runPsalm(Directory projectLocation, String psalmConfigLocation) asyn
   if (result.exitCode == 0) {
     return 0;
   } else if (result.exitCode == 1) {
-    return numberOfErrosFromPsalmOutput(result.stdout.toString()); // TODO parse and return real number
+    return numberOfErrosFromPsalmOutput(
+        result.stdout.toString()); // TODO parse and return real number
   } else {
     throw Exception(
         'psalm returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
