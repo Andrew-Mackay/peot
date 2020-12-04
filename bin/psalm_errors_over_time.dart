@@ -8,8 +8,13 @@ Future<void> main(List<String> arguments) async {
   // TODO take name of master/main branch
   var args = parseArguments(arguments);
   var numberOfErrorsOverTime =
-      await psalm_errors_over_time.getPsalmErrorsOverTime(args.projectLocation,
-          args.psalmConfigLocation, args.from, args.to, args.frequency);
+      await psalm_errors_over_time.getPsalmErrorsOverTime(
+          args.projectLocation,
+          args.psalmConfigLocation,
+          args.from,
+          args.to,
+          args.frequency,
+          args.mainBranch);
 
   print(numberOfErrorsOverTime);
   // TODO output as csv (take csv path)

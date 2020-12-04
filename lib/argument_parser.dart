@@ -34,6 +34,7 @@ class Arguments {
   final String psalmConfigLocation;
   final DateTime from;
   final DateTime to;
+  final String mainBranch = 'master';
 
   final Duration frequency = Duration(days: 30);
 

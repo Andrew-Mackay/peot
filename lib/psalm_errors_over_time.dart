@@ -12,10 +12,11 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     String psalmConfigLocation,
     DateTime from,
     DateTime to,
-    Duration frequency) async {
+    Duration frequency,
+    String mainBranch) async {
   var psalmErrorsOverTime = <DateTime, int>{};
 
-  await git_checkout.checkoutBranch('master', projectLocation);
+  await git_checkout.checkoutBranch(mainBranch, projectLocation);
 
   var commits = await git.getCommits(from, to, frequency, projectLocation);
   print('Found ${commits.length} commits\n');
@@ -43,7 +44,7 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     print('\n');
   }
 
-  await git_checkout.checkoutBranch('master', projectLocation);
+  await git_checkout.checkoutBranch(mainBranch, projectLocation);
 
   return psalmErrorsOverTime;
 }
