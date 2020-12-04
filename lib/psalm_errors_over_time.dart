@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'composer.dart' as composer;
-import 'git.dart' as git;
+import 'git/git.dart' as git;
+import 'git/git_checkout.dart' as git_checkout;
 import 'psalm.dart' as psalm;
 
 // TODO copy directory across?
@@ -14,14 +15,14 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     Duration frequency) async {
   var psalmErrorsOverTime = <DateTime, int>{};
 
-  await git.checkoutMasterBranch(projectLocation);
+  await git_checkout.branch('master', projectLocation);
 
   var commits = await git.getCommits(from, to, frequency, projectLocation);
   print('Found ${commits.length} commits\n');
 
   for (var commit in commits) {
     print('Checking out commit ${commit.hash} with date ${commit.date}');
-    await git.checkoutCommit(commit.hash, projectLocation);
+    await git_checkout.commit(commit.hash, projectLocation);
 
     print('Running composer install');
     await composer.install(projectLocation);
@@ -42,7 +43,7 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     print('\n');
   }
 
-  await git.checkoutMasterBranch(projectLocation);
+  await git_checkout.branch('master', projectLocation);
 
   return psalmErrorsOverTime;
 }

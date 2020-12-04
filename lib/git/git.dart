@@ -2,14 +2,7 @@ import 'dart:io';
 
 import 'git_commit.dart';
 
-Future<void> checkoutMasterBranch(Directory projectLocation) async {
-  var result = await Process.run('git', ['checkout', 'master'],
-      workingDirectory: projectLocation.path);
-  if (result.exitCode != 0) {
-    throw Exception(
-        'git checkout master returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
-  }
-}
+
 
 Future<void> resetGitBranch(Directory projectLocation) async {
   var result = await Process.run('git', ['reset', '--hard'],
@@ -58,18 +51,4 @@ Future<List<GitCommit>> getCommits(DateTime from, DateTime to,
     }
   }
   return commits;
-}
-
-Future<void> checkoutCommit(String hash, Directory projectLocation) async {
-  var result = await Process.run(
-      'git',
-      [
-        'checkout',
-        hash, // TODO need to sanitise?
-      ],
-      workingDirectory: projectLocation.path);
-  if (result.exitCode != 0) {
-    throw Exception(
-        'git checkout returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
-  }
 }
