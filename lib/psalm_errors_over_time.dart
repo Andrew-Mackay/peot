@@ -29,6 +29,16 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
 
     await git_checkout.checkoutBranch(mainBranch, projectDirectory);
 
+    if (from == null) {
+      var firstCommit = await git.getFirstCommit(projectDirectory);
+      from = firstCommit.date;
+    }
+
+    if (to == null) {
+      var lastCommit = await git.getLastCommit(projectDirectory);
+      to = lastCommit.date;
+    }
+
     var commits = await git.getCommits(from, to, frequency, projectDirectory);
     print('Found ${commits.length} commits\n');
 
@@ -36,8 +46,6 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
         commits, projectDirectory, psalmConfigLocation));
   } finally {
     print('Deleting temporary directory...');
-    print(temporaryDirectory.path);
-    print((await temporaryDirectory.exists()));
     await temporaryDirectory.delete(recursive: true);
   }
 }

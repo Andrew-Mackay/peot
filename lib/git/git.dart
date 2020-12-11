@@ -52,3 +52,48 @@ Future<List<GitCommit>> getCommits(DateTime from, DateTime to,
   }
   return commits;
 }
+
+Future<GitCommit> getFirstCommit(Directory projectLocation) async {
+   var result = await Process.run(
+      'git',
+      [
+        'log',
+        '--merges',
+        '--first-parent',
+        '--reverse',
+        '-n',
+        '1',
+        '--date=short'
+      ],
+      workingDirectory: projectLocation.path);
+  if (result.exitCode != 0) {
+    throw Exception(
+        'git log returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  }
+  if (result.stdout.toString().isEmpty) {
+    throw NoCommitsException();
+  }
+  return GitCommit.fromStdOut(result.stdout);
+}
+
+Future<GitCommit> getLastCommit(Directory projectLocation) async {
+   var result = await Process.run(
+      'git',
+      [
+        'log',
+        '--merges',
+        '--first-parent',
+        '-n',
+        '1',
+        '--date=short'
+      ],
+      workingDirectory: projectLocation.path);
+  if (result.exitCode != 0) {
+    throw Exception(
+        'git log returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  }
+  if (result.stdout.toString().isEmpty) {
+    throw NoCommitsException();
+  }
+  return GitCommit.fromStdOut(result.stdout);
+}
