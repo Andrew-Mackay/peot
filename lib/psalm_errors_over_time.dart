@@ -1,55 +1,96 @@
 import 'dart:io';
 
+import 'package:psalm_errors_over_time/git/git_commit.dart';
+
 import 'composer.dart' as composer;
 import 'git/git.dart' as git;
 import 'git/git_checkout.dart' as git_checkout;
+import 'git/git_clone.dart' as git_clone;
 import 'psalm.dart' as psalm;
 
-// TODO copy directory across?
 // TODO use isolates?
 Future<Map<DateTime, int>> getPsalmErrorsOverTime(
-    Directory projectLocation,
+    String projectLocation,
     String psalmConfigLocation,
     DateTime from,
     DateTime to,
     Duration frequency,
     String mainBranch) async {
+  print('Creating temporary directory...');
+  var temporaryDirectory =
+      await (Directory('.psalm_error_over_time_temp')).create();
+
+  try {
+    print('Cloning repository...');
+    await git_clone.clone(projectLocation, temporaryDirectory);
+
+    var projectDirectory =
+        Directory((await temporaryDirectory.list().first).path);
+
+    await git_checkout.checkoutBranch(mainBranch, projectDirectory);
+
+    var commits = await git.getCommits(from, to, frequency, projectDirectory);
+    print('Found ${commits.length} commits\n');
+
+    return (await _analyseCommits(
+        commits, projectDirectory, psalmConfigLocation));
+  } finally {
+    print('Deleting temporary directory...');
+    print(temporaryDirectory.path);
+    print((await temporaryDirectory.exists()));
+    await temporaryDirectory.delete(recursive: true);
+  }
+}
+
+Future<Map<DateTime, int>> _analyseCommits(
+  List<GitCommit> commits,
+  Directory projectDirectory,
+  String psalmConfigLocation,
+) async {
   var psalmErrorsOverTime = <DateTime, int>{};
-
-  await git_checkout.checkoutBranch(mainBranch, projectLocation);
-
-  var commits = await git.getCommits(from, to, frequency, projectLocation);
-  print('Found ${commits.length} commits\n');
-
   for (var commit in commits) {
-    print('Checking out commit ${commit.hash} with date ${commit.date}');
-    await git_checkout.checkoutCommit(commit.hash, projectLocation);
+    var result =
+        await _analyseCommit(commit, projectDirectory, psalmConfigLocation);
+    psalmErrorsOverTime[result.date] = result.numberOfErrors;
 
-    print('Running composer install');
-    await composer.install(projectLocation);
-
-    print('Installing composer-bin-plugin');
-    await composer.installComposerBinPlugin(projectLocation);
-
-    print('Installing psalm');
-    await composer.installPsalm(projectLocation);
-
-    // TODO --diff flag?
-    print('Running psalm');
-    var numberOfErrors = await psalm.run(projectLocation, psalmConfigLocation);
-    print('Number of errors: $numberOfErrors');
-
-    psalmErrorsOverTime[commit.date] = numberOfErrors;
-
-    await git.resetGitBranch(projectLocation);
-    await composer.removeComposerBinPlugin(projectLocation);
-    await composer.removeBrokenSymLinks(projectLocation);
+    await git.resetGitBranch(projectDirectory);
+    await composer.removeComposerBinPlugin(projectDirectory);
+    await composer.removeBrokenSymLinks(projectDirectory);
 
     // TODO clear cache?
     print('\n');
   }
-
-  await git_checkout.checkoutBranch(mainBranch, projectLocation);
-
   return psalmErrorsOverTime;
+}
+
+Future<AnalysisResult> _analyseCommit(
+  GitCommit commit,
+  Directory projectDirectory,
+  String psalmConfigLocation,
+) async {
+  print('Checking out commit ${commit.hash} with date ${commit.date}');
+  await git_checkout.checkoutCommit(commit.hash, projectDirectory);
+
+  print('Running composer install');
+  await composer.install(projectDirectory);
+
+  print('Installing composer-bin-plugin');
+  await composer.installComposerBinPlugin(projectDirectory);
+
+  print('Installing psalm');
+  await composer.installPsalm(projectDirectory);
+
+  // TODO --diff flag?
+  print('Running psalm');
+  var numberOfErrors = await psalm.run(projectDirectory, psalmConfigLocation);
+  print('Number of errors: $numberOfErrors');
+  return AnalysisResult(commit.date, numberOfErrors, commit);
+}
+
+class AnalysisResult {
+  final DateTime date;
+  final int numberOfErrors;
+  final GitCommit commit;
+
+  AnalysisResult(this.date, this.numberOfErrors, this.commit);
 }

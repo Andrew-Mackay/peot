@@ -12,7 +12,7 @@ Arguments parseArguments(List<String> arguments) {
   validateArguments(args);
   // project psalm_config from to,
   return Arguments(
-    Directory(args[0]),
+    args[0],
     args[1],
     DateTime.parse(args[2]),
     DateTime.parse(args[3]),
@@ -30,7 +30,7 @@ void validateArguments(List<String> arguments) {
 }
 
 class Arguments {
-  final Directory projectLocation;
+  final String projectLocation;
   final String psalmConfigLocation;
   final DateTime from;
   final DateTime to;
