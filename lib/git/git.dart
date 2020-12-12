@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'git_commit.dart';
@@ -13,18 +14,30 @@ Future<void> resetGitBranch(Directory projectLocation) async {
   }
 }
 
-Future<GitCommit> _getNearestGitCommit(
-    Directory projectLocation, DateTime date) async {
+Future<GitCommit> _getNearestGitCommit(DateTime date, List<GitCommit> commits) async {
+  for (var commit in commits) {
+    if (commit.date == date) {
+      return commit;
+    }
+    if (commit.date.isAfter(date)) {
+      return commit;
+    }
+  }
+  throw NoCommitsException();
+}
+
+Future<List<GitCommit>> _getAllCommits(DateTime from, DateTime to, Directory projectLocation) async {
   var result = await Process.run(
       'git',
       [
         'log',
         '--merges',
         '--first-parent',
-        '--until=${date.month}-${date.day}-${date.year}',
-        '-n',
-        '1',
-        '--date=short'
+        '--after=${from.month}-${from.day}-${from.year}',
+        '--before=${to.month}-${to.day}-${to.year}',
+        '--date=short',
+        '--pretty="%H, %ad"',
+        '--reverse'
       ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
@@ -32,25 +45,36 @@ Future<GitCommit> _getNearestGitCommit(
         'git log returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
   if (result.stdout.toString().isEmpty) {
-    throw NoCommitsException();
+    return [];
   }
-  return GitCommit.fromStdOut(result.stdout);
+  var gitCommits = <GitCommit>[];
+  var commitLines = LineSplitter().convert(result.stdout);
+  for (var commitLine in commitLines) {
+    gitCommits.add(commitFromStdOut(commitLine.toString()));
+  }
+  return gitCommits;
 }
 
 class NoCommitsException implements Exception {}
 
 Future<List<GitCommit>> getCommits(DateTime from, DateTime to,
     Duration frequency, Directory projectLocation) async {
-  var commits = <GitCommit>[];
+  var allCommits = await _getAllCommits(from, to, projectLocation);
+  if (frequency == null) {
+    return allCommits;
+  }
+
+  // Set to ensure no duplicates
+  var commits = <GitCommit>{};
   for (var date = from; date.isBefore(to); date = date.add(frequency)) {
     try {
-      var nearestGitCommit = await _getNearestGitCommit(projectLocation, date);
+      var nearestGitCommit = await _getNearestGitCommit(date, allCommits);
       commits.add(nearestGitCommit);
     } on NoCommitsException {
       continue;
     }
   }
-  return commits;
+  return commits.toList();
 }
 
 Future<GitCommit> getFirstCommit(Directory projectLocation) async {
@@ -63,7 +87,8 @@ Future<GitCommit> getFirstCommit(Directory projectLocation) async {
         '--reverse',
         '-n',
         '1',
-        '--date=short'
+        '--date=short',
+        '--pretty="%H, %ad"',
       ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
@@ -73,7 +98,7 @@ Future<GitCommit> getFirstCommit(Directory projectLocation) async {
   if (result.stdout.toString().isEmpty) {
     throw NoCommitsException();
   }
-  return GitCommit.fromStdOut(result.stdout);
+  return commitFromStdOut(result.stdout.toString());
 }
 
 Future<GitCommit> getLastCommit(Directory projectLocation) async {
@@ -85,7 +110,8 @@ Future<GitCommit> getLastCommit(Directory projectLocation) async {
         '--first-parent',
         '-n',
         '1',
-        '--date=short'
+        '--date=short',
+        '--pretty="%H, %ad"',
       ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
@@ -95,5 +121,6 @@ Future<GitCommit> getLastCommit(Directory projectLocation) async {
   if (result.stdout.toString().isEmpty) {
     throw NoCommitsException();
   }
-  return GitCommit.fromStdOut(result.stdout);
+  print(result.stdout);
+  return commitFromStdOut(result.stdout.toString());
 }

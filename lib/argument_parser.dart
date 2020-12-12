@@ -15,6 +15,11 @@ If not provided will try to use existing psalm.xml in repository.
 If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
       ''',
     )
+    ..addOption('frequency',
+        help: 'How frequently to analyse the project',
+        allowed: frequencyOptions,
+        defaultsTo: 'monthly'
+    )
     ..addFlag(
       'help',
       abbr: 'h',
@@ -54,7 +59,25 @@ If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
     psalmConfigLocation,
     results.wasParsed('from') ? DateTime.parse(results['from']) : null,
     results.wasParsed('to') ? DateTime.parse(results['to']) : null,
+    frequencyOptionToDuration(results['frequency'])
   );
+}
+const frequencyOptions = {'all', 'daily', 'weekly', 'monthly', 'yearly'};
+
+Duration frequencyOptionToDuration(String option) {
+  switch (option) {
+    case 'all':
+      return null;
+    case 'daily':
+      return Duration(days: 1);
+    case 'weekly':
+      return Duration(days: 7);
+    case 'monthly':
+      return Duration(days: 31);
+    case 'yearly':
+    default:
+      return Duration(days: 365);
+  }
 }
 
 class Arguments {
@@ -62,13 +85,13 @@ class Arguments {
   final File psalmConfig;
   final DateTime from;
   final DateTime to;
-
-  final Duration frequency = Duration(days: 30);
+  final Duration frequency;
 
   Arguments(
     this.projectLocation,
     this.psalmConfig,
     this.from,
     this.to,
+    this.frequency
   );
 }

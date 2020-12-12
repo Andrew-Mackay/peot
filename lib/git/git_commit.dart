@@ -1,14 +1,16 @@
-import 'dart:convert';
+import 'package:equatable/equatable.dart';
 
-class GitCommit {
-  String hash;
-  DateTime date;
+class GitCommit extends Equatable {
+  final String hash;
+  final DateTime date;
 
   GitCommit(this.hash, this.date);
 
-  GitCommit.fromStdOut(String commit) {
-    var commitLines = LineSplitter().convert(commit);
-    hash = commitLines[0].split(' ')[1];
-    date = DateTime.parse(commitLines[3].split('   ')[1]);
-  }
+  @override
+  List<Object> get props => [hash, date];
+}
+
+GitCommit commitFromStdOut(String stdOut) {
+  var hashAndDate = stdOut.split('"')[1].split(', ');
+  return GitCommit(hashAndDate[0], DateTime.parse(hashAndDate[1]));
 }
