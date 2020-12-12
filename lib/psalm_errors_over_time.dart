@@ -10,7 +10,7 @@ import 'git/git_clone.dart' as git_clone;
 import 'psalm.dart' as psalm;
 
 // TODO use isolates?
-Future<Map<DateTime, int>> getPsalmErrorsOverTime(String projectLocation,
+Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(String projectLocation,
     File psalmConfig, DateTime from, DateTime to, Duration frequency) async {
   print('Creating temporary directory...');
   var temporaryDirectory =
@@ -43,16 +43,16 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(String projectLocation,
   }
 }
 
-Future<Map<DateTime, int>> _analyseCommits(
+Future<Map<DateTime, AnalysisResult>> _analyseCommits(
   List<GitCommit> commits,
   Directory projectDirectory,
   File psalmConfigLocation,
 ) async {
-  var psalmErrorsOverTime = <DateTime, int>{};
+  var psalmErrorsOverTime = <DateTime, AnalysisResult>{};
   for (var commit in commits) {
     var result =
         await _analyseCommit(commit, projectDirectory, psalmConfigLocation);
-    psalmErrorsOverTime[result.date] = result.numberOfErrors;
+    psalmErrorsOverTime[result.date] = result;
 
     await git.resetGitBranch(projectDirectory);
     await composer.removeComposerBinPlugin(projectDirectory);
