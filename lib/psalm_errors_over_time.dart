@@ -14,8 +14,7 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     String psalmConfigLocation,
     DateTime from,
     DateTime to,
-    Duration frequency,
-    String mainBranch) async {
+    Duration frequency) async {
   print('Creating temporary directory...');
   var temporaryDirectory =
       await (Directory('.psalm_error_over_time_temp')).create();
@@ -26,8 +25,6 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
 
     var projectDirectory =
         Directory((await temporaryDirectory.list().first).path);
-
-    await git_checkout.checkoutBranch(mainBranch, projectDirectory);
 
     if (from == null) {
       var firstCommit = await git.getFirstCommit(projectDirectory);
