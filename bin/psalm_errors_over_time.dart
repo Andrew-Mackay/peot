@@ -6,11 +6,11 @@ import 'package:psalm_errors_over_time/psalm_errors_over_time.dart'
 Future<void> main(List<String> arguments) async {
   // TODO take psalm version?
   // TODO take number of threads
-  var args = parseArguments(arguments);
+  var args = await parseArguments(arguments);
   var numberOfErrorsOverTime =
       await psalm_errors_over_time.getPsalmErrorsOverTime(
           args.projectLocation,
-          args.psalmConfigLocation,
+          args.psalmConfig,
           args.from,
           args.to,
           args.frequency);

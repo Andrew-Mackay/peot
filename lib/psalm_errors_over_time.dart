@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:psalm_errors_over_time/git/git_commit.dart';
 
 import 'composer.dart' as composer;
@@ -9,12 +10,8 @@ import 'git/git_clone.dart' as git_clone;
 import 'psalm.dart' as psalm;
 
 // TODO use isolates?
-Future<Map<DateTime, int>> getPsalmErrorsOverTime(
-    String projectLocation,
-    String psalmConfigLocation,
-    DateTime from,
-    DateTime to,
-    Duration frequency) async {
+Future<Map<DateTime, int>> getPsalmErrorsOverTime(String projectLocation,
+    File psalmConfig, DateTime from, DateTime to, Duration frequency) async {
   print('Creating temporary directory...');
   var temporaryDirectory =
       await (Directory('.psalm_error_over_time_temp')).create();
@@ -39,8 +36,7 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
     var commits = await git.getCommits(from, to, frequency, projectDirectory);
     print('Found ${commits.length} commits\n');
 
-    return (await _analyseCommits(
-        commits, projectDirectory, psalmConfigLocation));
+    return (await _analyseCommits(commits, projectDirectory, psalmConfig));
   } finally {
     print('Deleting temporary directory...');
     await temporaryDirectory.delete(recursive: true);
@@ -50,7 +46,7 @@ Future<Map<DateTime, int>> getPsalmErrorsOverTime(
 Future<Map<DateTime, int>> _analyseCommits(
   List<GitCommit> commits,
   Directory projectDirectory,
-  String psalmConfigLocation,
+  File psalmConfigLocation,
 ) async {
   var psalmErrorsOverTime = <DateTime, int>{};
   for (var commit in commits) {
@@ -71,7 +67,7 @@ Future<Map<DateTime, int>> _analyseCommits(
 Future<AnalysisResult> _analyseCommit(
   GitCommit commit,
   Directory projectDirectory,
-  String psalmConfigLocation,
+  File psalmConfig,
 ) async {
   print('Checking out commit ${commit.hash} with date ${commit.date}');
   await git_checkout.checkoutCommit(commit.hash, projectDirectory);
@@ -85,9 +81,23 @@ Future<AnalysisResult> _analyseCommit(
   print('Installing psalm');
   await composer.installPsalm(projectDirectory);
 
+  if (psalmConfig == null) {
+    psalmConfig = File(p.join(projectDirectory.path, 'psalm.xml'));
+    if (await psalmConfig.exists()) {
+      print('Using existing psalm.xml');
+    } else {
+      // TODO test this condition
+      print('Generating psalm.xml');
+      psalmConfig = await psalm.generateConfigurationFile(projectDirectory);
+    }
+  }
+
   // TODO --diff flag?
   print('Running psalm');
-  var numberOfErrors = await psalm.run(projectDirectory, psalmConfigLocation);
+  var numberOfErrors = await psalm.run(
+    projectDirectory,
+    psalmConfig.absolute.path,
+  );
   print('Number of errors: $numberOfErrors');
   return AnalysisResult(commit.date, numberOfErrors, commit);
 }

@@ -1,11 +1,20 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:path/path.dart' as p;
 
-Arguments parseArguments(List<String> arguments) {
+Future<Arguments> parseArguments(List<String> arguments) async {
   final parser = ArgParser()
     ..addOption('from')
     ..addOption('to')
+    ..addOption(
+      'psalm-config',
+      help: '''
+Path for psalm.xml configuration file.
+If not provided will try to use existing psalm.xml in repository.
+If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
+      ''',
+    )
     ..addFlag(
       'help',
       abbr: 'h',
@@ -14,8 +23,6 @@ Arguments parseArguments(List<String> arguments) {
     );
 
   // TODO add optional frequency argument (default monthly)
-  // TODO make from/to optional
-  // TODO make psalm config optional
   // TODO check if paths exist
   // TODO check date format
   // TODO check to is after from (if provided)
@@ -27,10 +34,24 @@ Arguments parseArguments(List<String> arguments) {
     exit(0);
   }
 
+  var psalmConfigLocation;
+  if (results.wasParsed('psalm-config')) {
+    psalmConfigLocation = File(results['psalm-config']);
+    var fileExists = await psalmConfigLocation.exists();
+    if (!fileExists) {
+      throw ArgumentError('${psalmConfigLocation.path} does not exist.');
+    }
+    var fileExtension = p.extension(psalmConfigLocation.path);
+    if (fileExtension != '.xml') {
+      throw ArgumentError(
+          'Psalm config must be an xml file. Provided file is of type: $fileExtension.');
+    }
+  }
+
   // project psalm_config from to,
   return Arguments(
     results.rest[0],
-    results.rest[1],
+    psalmConfigLocation,
     results.wasParsed('from') ? DateTime.parse(results['from']) : null,
     results.wasParsed('to') ? DateTime.parse(results['to']) : null,
   );
@@ -38,7 +59,7 @@ Arguments parseArguments(List<String> arguments) {
 
 class Arguments {
   final String projectLocation;
-  final String psalmConfigLocation;
+  final File psalmConfig;
   final DateTime from;
   final DateTime to;
 
@@ -46,7 +67,7 @@ class Arguments {
 
   Arguments(
     this.projectLocation,
-    this.psalmConfigLocation,
+    this.psalmConfig,
     this.from,
     this.to,
   );
