@@ -27,8 +27,6 @@ If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
       negatable: false,
     );
 
-  // TODO add optional frequency argument (default monthly)
-  // TODO check if paths exist
   // TODO check date format
   // TODO check to is after from (if provided)
 
@@ -53,7 +51,6 @@ If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
     }
   }
 
-  // project psalm_config from to,
   return Arguments(
     results.rest[0],
     psalmConfigLocation,
