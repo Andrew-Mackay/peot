@@ -85,8 +85,6 @@ Future<GitCommit> getFirstCommit(Directory projectLocation) async {
         '--merges',
         '--first-parent',
         '--reverse',
-        '-n',
-        '1',
         '--date=short',
         '--pretty="%H, %ad"',
       ],
@@ -98,7 +96,8 @@ Future<GitCommit> getFirstCommit(Directory projectLocation) async {
   if (result.stdout.toString().isEmpty) {
     throw NoCommitsException();
   }
-  return commitFromStdOut(result.stdout.toString());
+  var firstLine = LineSplitter().convert(result.stdout.toString()).first;
+  return commitFromStdOut(firstLine);
 }
 
 Future<GitCommit> getLastCommit(Directory projectLocation) async {
