@@ -15,10 +15,16 @@ If not provided will try to use existing psalm.xml in repository.
 If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
       ''',
     )
-    ..addOption('frequency',
-        help: 'How frequently to analyse the project',
-        allowed: frequencyOptions,
-        defaultsTo: 'monthly'
+    ..addOption(
+      'frequency',
+      help: 'How frequently to analyse the project',
+      allowed: frequencyOptions,
+      defaultsTo: 'monthly',
+    )
+    ..addOption(
+      'psalm-version',
+      help: 'Psalm version to use',
+      defaultsTo: '4.1.1',
     )
     ..addFlag(
       'help',
@@ -56,9 +62,11 @@ If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
     psalmConfigLocation,
     results.wasParsed('from') ? DateTime.parse(results['from']) : null,
     results.wasParsed('to') ? DateTime.parse(results['to']) : null,
-    frequencyOptionToDuration(results['frequency'])
+    frequencyOptionToDuration(results['frequency']),
+    results['psalm-version'],
   );
 }
+
 const frequencyOptions = {'all', 'daily', 'weekly', 'monthly', 'yearly'};
 
 Duration frequencyOptionToDuration(String option) {
@@ -83,12 +91,14 @@ class Arguments {
   final DateTime from;
   final DateTime to;
   final Duration frequency;
+  final String psalmVersion;
 
   Arguments(
     this.projectLocation,
     this.psalmConfig,
     this.from,
     this.to,
-    this.frequency
+    this.frequency,
+    this.psalmVersion,
   );
 }

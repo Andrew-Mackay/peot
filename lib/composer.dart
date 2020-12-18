@@ -45,7 +45,7 @@ Future<void> removeComposerBinPlugin(Directory projectLocation) async {
   }
 }
 
-Future<void> installPsalm(Directory projectLocation) async {
+Future<void> installPsalm(Directory projectLocation, String version) async {
   var result = await Process.run(
       'composer',
       [
@@ -53,7 +53,7 @@ Future<void> installPsalm(Directory projectLocation) async {
         'errors_over_time',
         'require',
         '--dev',
-        'vimeo/psalm:4.1.1',
+        'vimeo/psalm:$version',
         '-q'
       ],
       workingDirectory: projectLocation.path);

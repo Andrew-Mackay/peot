@@ -10,8 +10,14 @@ import 'git/git_clone.dart' as git_clone;
 import 'psalm.dart' as psalm;
 
 // TODO use isolates?
-Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(String projectLocation,
-    File psalmConfig, DateTime from, DateTime to, Duration frequency) async {
+Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
+  String projectLocation,
+  File psalmConfig,
+  DateTime from,
+  DateTime to,
+  Duration frequency,
+  String psalmVersion,
+) async {
   print('Creating temporary directory...');
   var temporaryDirectory =
       await (Directory('.psalm_error_over_time_temp')).create();
@@ -37,7 +43,7 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(String projectLocat
     var commits = await git.getCommits(from, to, frequency, projectDirectory);
     print('Found ${commits.length} commits\n');
 
-    return (await _analyseCommits(commits, projectDirectory, psalmConfig));
+    return (await _analyseCommits(commits, projectDirectory, psalmConfig, psalmVersion));
   } finally {
     print('Deleting temporary directory...');
     await temporaryDirectory.delete(recursive: true);
@@ -48,20 +54,20 @@ Future<Map<DateTime, AnalysisResult>> _analyseCommits(
   List<GitCommit> commits,
   Directory projectDirectory,
   File psalmConfigLocation,
+  String psalmVersion,
 ) async {
   var psalmErrorsOverTime = <DateTime, AnalysisResult>{};
   for (var commit in commits) {
     var result =
-        await _analyseCommit(commit, projectDirectory, psalmConfigLocation);
+        await _analyseCommit(commit, projectDirectory, psalmConfigLocation, psalmVersion);
     psalmErrorsOverTime[result.date] = result;
 
     print('Resetting git branch...');
     await git.resetGitBranch(projectDirectory);
     print('Removing composer bin plugin...');
     await composer.removeComposerBinPlugin(projectDirectory);
-    print('Removing broken composer symbolic links...');
+    print('Removing broken composer symbolic links...\n');
     await composer.removeBrokenSymLinks(projectDirectory);
-    print('\n');
 
     // TODO clear cache?
   }
@@ -72,8 +78,10 @@ Future<AnalysisResult> _analyseCommit(
   GitCommit commit,
   Directory projectDirectory,
   File psalmConfig,
+  String psalmVersion,
 ) async {
-  print('Checking out commit ${commit.hash} with date ${commit.date.year}-${commit.date.month}-${commit.date.day}...');
+  print(
+      'Checking out commit ${commit.hash} with date ${commit.date.year}-${commit.date.month}-${commit.date.day}...');
   await git_checkout.checkoutCommit(commit.hash, projectDirectory);
 
   print('Running composer install...');
@@ -83,7 +91,7 @@ Future<AnalysisResult> _analyseCommit(
   await composer.installComposerBinPlugin(projectDirectory);
 
   print('(Composer) Installing psalm...');
-  await composer.installPsalm(projectDirectory);
+  await composer.installPsalm(projectDirectory, psalmVersion);
 
   if (psalmConfig == null) {
     psalmConfig = File(p.join(projectDirectory.path, 'psalm.xml'));
