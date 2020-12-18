@@ -55,9 +55,13 @@ Future<Map<DateTime, AnalysisResult>> _analyseCommits(
         await _analyseCommit(commit, projectDirectory, psalmConfigLocation);
     psalmErrorsOverTime[result.date] = result;
 
+    print('Resetting git branch...');
     await git.resetGitBranch(projectDirectory);
+    print('Removing composer bin plugin...');
     await composer.removeComposerBinPlugin(projectDirectory);
+    print('Removing broken composer symbolic links...');
     await composer.removeBrokenSymLinks(projectDirectory);
+    print('\n');
 
     // TODO clear cache?
   }
@@ -98,7 +102,7 @@ Future<AnalysisResult> _analyseCommit(
     projectDirectory,
     psalmConfig.absolute.path,
   );
-  print('Number of errors: $numberOfErrors\n');
+  print('Number of errors: $numberOfErrors');
   return AnalysisResult(commit.date, numberOfErrors, commit);
 }
 
