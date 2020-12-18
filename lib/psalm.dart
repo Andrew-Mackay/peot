@@ -10,8 +10,8 @@ Future<int> run(
         '--config=$psalmConfigLocation',
         '--ignore-baseline',
         '--no-progress',
-        '-m'
-        // '--no-cache'
+        '-m',
+        '--no-cache'
       ],
       workingDirectory: projectLocation.path);
   if (result.exitCode == 0) {
@@ -43,8 +43,6 @@ Future<File> generateConfigurationFile(Directory projectLocation) async {
 }
 
 int _numberOfErrosFromPsalmOutput(String psalmOutput) {
-  // TODO make once instead of every call
-  var regExp = RegExp(r'[0-9]+ errors found');
-  var match = regExp.firstMatch(psalmOutput);
+  var match = RegExp(r'[0-9]+ errors found').firstMatch(psalmOutput);
   return int.parse(match.group(0).split(' ')[0]);
 }
