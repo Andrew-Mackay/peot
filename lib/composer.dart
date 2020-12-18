@@ -1,11 +1,7 @@
 import 'dart:io';
 
 Future<void> install(Directory projectLocation) async {
-  var result = await Process.run(
-      'composer',
-      [
-        'install',
-      ],
+  var result = await Process.run('composer', ['install'],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -15,7 +11,13 @@ Future<void> install(Directory projectLocation) async {
 
 Future<void> installComposerBinPlugin(Directory projectLocation) async {
   var result = await Process.run(
-      'composer', ['require', '--dev', 'bamarni/composer-bin-plugin'],
+      'composer',
+      [
+        'require',
+        '--dev',
+        'bamarni/composer-bin-plugin',
+        '--ignore-platform-reqs',
+      ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -36,8 +38,7 @@ Future<void> removeBrokenSymLinks(Directory projectLocation) async {
 }
 
 Future<void> removeComposerBinPlugin(Directory projectLocation) async {
-  var result = await Process.run(
-      'rm', ['-r', 'vendor-bin'],
+  var result = await Process.run('rm', ['-r', 'vendor-bin'],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -46,10 +47,9 @@ Future<void> removeComposerBinPlugin(Directory projectLocation) async {
   print(result.stdout);
 }
 
-
 Future<void> installPsalm(Directory projectLocation) async {
-  var result = await Process.run(
-      'composer', ['bin', 'errors_over_time', 'require', '--dev', 'vimeo/psalm:4.1.1'],
+  var result = await Process.run('composer',
+      ['bin', 'errors_over_time', 'require', '--dev', 'vimeo/psalm:4.1.1'],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
