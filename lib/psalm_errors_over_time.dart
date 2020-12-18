@@ -9,7 +9,6 @@ import 'git/git_checkout.dart' as git_checkout;
 import 'git/git_clone.dart' as git_clone;
 import 'psalm.dart' as psalm;
 
-// TODO use isolates?
 Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
   String projectLocation,
   File psalmConfig,

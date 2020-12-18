@@ -15,7 +15,6 @@ Future<void> main(List<String> arguments) async {
           args.psalmVersion,
           );
 
-  // TODO take csv path as arg
   await csv_writer.writePsalmErrorsOverTimeToCSV(numberOfErrorsOverTime);
   print('Analysis complete! Results have been written to results.csv.');
 }
