@@ -18,6 +18,7 @@ Future<void> writePsalmErrorsOverTimeToCSV(
   });
 
   var csvFormatted = ListToCsvConverter().convert(rows);
-  print('Writing analysis results to results.csv');
+  print('Writing analysis results to results.csv...');
   await File('results.csv').writeAsString(csvFormatted);
+  print('Analysis complete. Results have been written to results.csv.');
 }

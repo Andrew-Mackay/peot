@@ -17,7 +17,7 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(String projectLocat
       await (Directory('.psalm_error_over_time_temp')).create();
 
   try {
-    print('Cloning repository...');
+    print('Cloning repository into temporary directory...');
     await git_clone.clone(projectLocation, temporaryDirectory);
 
     var projectDirectory =
@@ -33,6 +33,7 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(String projectLocat
       to = lastCommit.date;
     }
 
+    print('Collecting commits...');
     var commits = await git.getCommits(from, to, frequency, projectDirectory);
     print('Found ${commits.length} commits\n');
 
@@ -68,16 +69,16 @@ Future<AnalysisResult> _analyseCommit(
   Directory projectDirectory,
   File psalmConfig,
 ) async {
-  print('Checking out commit ${commit.hash} with date ${commit.date.year}-${commit.date.month}-${commit.date.day}');
+  print('Checking out commit ${commit.hash} with date ${commit.date.year}-${commit.date.month}-${commit.date.day}...');
   await git_checkout.checkoutCommit(commit.hash, projectDirectory);
 
-  print('Running composer install');
+  print('Running composer install...');
   await composer.install(projectDirectory);
 
-  print('Installing composer-bin-plugin');
+  print('(Composer) Installing bamarni/composer-bin-plugin...');
   await composer.installComposerBinPlugin(projectDirectory);
 
-  print('Installing psalm');
+  print('(Composer) Installing psalm...');
   await composer.installPsalm(projectDirectory);
 
   if (psalmConfig == null) {
@@ -86,13 +87,13 @@ Future<AnalysisResult> _analyseCommit(
       print('Using existing psalm.xml');
     } else {
       // TODO test this condition
-      print('Generating psalm.xml');
+      print('Generating psalm.xml...');
       psalmConfig = await psalm.generateConfigurationFile(projectDirectory);
     }
   }
 
   // TODO --diff flag?
-  print('Running psalm');
+  print('Running psalm...');
   var numberOfErrors = await psalm.run(
     projectDirectory,
     psalmConfig.absolute.path,
