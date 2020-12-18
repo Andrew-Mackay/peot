@@ -68,7 +68,7 @@ Future<AnalysisResult> _analyseCommit(
   Directory projectDirectory,
   File psalmConfig,
 ) async {
-  print('Checking out commit ${commit.hash} with date ${commit.date}');
+  print('Checking out commit ${commit.hash} with date ${commit.date.year}-${commit.date.month}-${commit.date.day}');
   await git_checkout.checkoutCommit(commit.hash, projectDirectory);
 
   print('Running composer install');
