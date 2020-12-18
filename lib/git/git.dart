@@ -120,6 +120,5 @@ Future<GitCommit> getLastCommit(Directory projectLocation) async {
   if (result.stdout.toString().isEmpty) {
     throw NoCommitsException();
   }
-  print(result.stdout);
   return commitFromStdOut(result.stdout.toString());
 }

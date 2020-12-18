@@ -17,13 +17,13 @@ Future<void> installComposerBinPlugin(Directory projectLocation) async {
         '--dev',
         'bamarni/composer-bin-plugin',
         '--ignore-platform-reqs',
+        '-q'
       ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
         'composer require composer-bin-plugin returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
-  print(result.stdout);
 }
 
 Future<void> removeBrokenSymLinks(Directory projectLocation) async {
@@ -34,7 +34,6 @@ Future<void> removeBrokenSymLinks(Directory projectLocation) async {
     throw Exception(
         'removing broken symlinks returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
-  print(result.stdout);
 }
 
 Future<void> removeComposerBinPlugin(Directory projectLocation) async {
@@ -44,16 +43,22 @@ Future<void> removeComposerBinPlugin(Directory projectLocation) async {
     throw Exception(
         'removing composer-bin-plugin returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
-  print(result.stdout);
 }
 
 Future<void> installPsalm(Directory projectLocation) async {
-  var result = await Process.run('composer',
-      ['bin', 'errors_over_time', 'require', '--dev', 'vimeo/psalm:4.1.1'],
+  var result = await Process.run(
+      'composer',
+      [
+        'bin',
+        'errors_over_time',
+        'require',
+        '--dev',
+        'vimeo/psalm:4.1.1',
+        '-q'
+      ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
         'composer require psalm returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
-  print(result.stdout);
 }

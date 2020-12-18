@@ -59,7 +59,6 @@ Future<Map<DateTime, AnalysisResult>> _analyseCommits(
     await composer.removeBrokenSymLinks(projectDirectory);
 
     // TODO clear cache?
-    print('\n');
   }
   return psalmErrorsOverTime;
 }
@@ -98,7 +97,7 @@ Future<AnalysisResult> _analyseCommit(
     projectDirectory,
     psalmConfig.absolute.path,
   );
-  print('Number of errors: $numberOfErrors');
+  print('Number of errors: $numberOfErrors\n');
   return AnalysisResult(commit.date, numberOfErrors, commit);
 }
 
