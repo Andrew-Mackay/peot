@@ -1,5 +1,19 @@
-A sample command-line application with an entrypoint in `bin/`, library code
-in `lib/`, and example unit test in `test/`.
+# PEOT (Psalm Errors over Time)
 
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+A command line application used to analyse the number of errors in a PHP application over time using the [psalm](https://github.com/vimeo/psalm) static analysis tool. 
+
+The target project must use git for version control.
+
+## Installation
+// TODO
+
+## Usage
+// TODO
+
+## Example Results
+Graphing of data has been done manually using google sheets
+
+// TODO
+
+## License
+// TODO
