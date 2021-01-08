@@ -16,4 +16,4 @@ Graphing of data has been done manually using google sheets
 // TODO
 
 ## License
-// TODO
+[MIT](LICENSE)
