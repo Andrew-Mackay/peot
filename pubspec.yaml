@@ -4,6 +4,7 @@ description: >-
   the number of errors in a PHP application over time using the psalm static 
   analysis tool.
 # version: 0.9.0
+repository: https://github.com/Andrew-Mackay/peot
 
 environment:
   sdk: '>=2.8.1 <3.0.0'
