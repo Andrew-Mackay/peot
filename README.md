@@ -4,8 +4,16 @@ Peot is a command line application used to analyse the number of errors in a PHP
 
 The target project must use git for version control.
 
-## Installation
+## Project Status
 // TODO
+
+## Requirements
+// TODO
+
+## Installation
+// TODO compiled
+// TODO Build
+// TODO Dart
 
 ## Usage
 // TODO
