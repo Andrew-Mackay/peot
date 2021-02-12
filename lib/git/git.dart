@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'git_commit.dart';
+import '../models/git_commit.dart';
 
 Future<void> resetGitBranch(Directory projectLocation) async {
   var result = await Process.run('git', ['reset', '--hard'],

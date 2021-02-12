@@ -6,7 +6,7 @@ import 'composer.dart' as composer;
 import 'git/git.dart' as git;
 import 'git/git_checkout.dart' as git_checkout;
 import 'git/git_clone.dart' as git_clone;
-import 'git/git_commit.dart';
+import 'models/git_commit.dart';
 import 'psalm.dart' as psalm;
 
 Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
