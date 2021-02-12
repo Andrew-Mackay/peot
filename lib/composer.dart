@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as p;
 
 Future<void> install(Directory projectLocation) async {
   var result = await Process.run('composer', ['install'],
@@ -27,22 +28,24 @@ Future<void> installComposerBinPlugin(Directory projectLocation) async {
 }
 
 Future<void> removeBrokenSymLinks(Directory projectLocation) async {
-  var result = await Process.run(
-      'find', ['./vendor/bin/', '-xtype', 'l', '-delete'],
-      workingDirectory: projectLocation.path);
-  if (result.exitCode != 0) {
-    throw Exception(
-        'removing broken symlinks returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  var vendorBinDirectory =
+      Directory(p.join(projectLocation.path, 'vendor', 'bin'));
+  await for (var entity in vendorBinDirectory.list()) {
+    if (entity is Link) {
+      try {
+        entity.resolveSymbolicLinksSync();
+      } on FileSystemException {
+        // broken link
+        entity.deleteSync();
+      }
+    }
   }
 }
 
 Future<void> removeComposerBinPlugin(Directory projectLocation) async {
-  var result = await Process.run('rm', ['-r', 'vendor-bin'],
-      workingDirectory: projectLocation.path);
-  if (result.exitCode != 0) {
-    throw Exception(
-        'removing composer-bin-plugin returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
-  }
+  projectLocation.list();
+  var vendorBinDir = Directory(p.join(projectLocation.path, 'vendor-bin'));
+  await vendorBinDir.delete(recursive: true);
 }
 
 Future<void> installPsalm(Directory projectLocation, String version) async {
@@ -60,5 +63,13 @@ Future<void> installPsalm(Directory projectLocation, String version) async {
   if (result.exitCode != 0) {
     throw Exception(
         'composer require psalm returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  }
+}
+
+Future<void> version() async {
+  var result = await Process.run('composer', ['--version']);
+  if (result.exitCode != 0) {
+    throw ProcessException(
+        'composer', ['--version'], result.stderr, result.exitCode);
   }
 }
