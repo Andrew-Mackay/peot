@@ -8,7 +8,8 @@ The target project must use git for version control.
 // TODO
 
 ## Requirements
-// TODO
+- [git](https://git-scm.com/)
+- [composer installed globally](https://getcomposer.org/doc/00-intro.md#globally)
 
 ## Installation
 // TODO compiled
