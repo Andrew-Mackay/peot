@@ -1,15 +1,11 @@
-import 'package:peot/argument_parser.dart';
-import 'package:peot/csv_writer.dart' as csv_writer;
-import 'package:peot/psalm_errors_over_time.dart' as psalm_errors_over_time;
-import 'package:peot/requirements_checker.dart';
+import 'package:peot/peot.dart' as peot;
 
 Future<void> main(List<String> arguments) async {
-  var args = await parseArguments(arguments);
+  var args = await peot.parseArguments(arguments);
 
-  await checkRequirements();
+  await peot.checkRequirements();
 
-  var numberOfErrorsOverTime =
-      await psalm_errors_over_time.getPsalmErrorsOverTime(
+  var numberOfErrorsOverTime = await peot.getPsalmErrorsOverTime(
     args.projectLocation,
     args.psalmConfig,
     args.from,
@@ -19,6 +15,6 @@ Future<void> main(List<String> arguments) async {
     args.considerAllCommits,
   );
 
-  await csv_writer.writePsalmErrorsOverTimeToCSV(numberOfErrorsOverTime);
+  await peot.writePsalmErrorsOverTimeToCSV(numberOfErrorsOverTime);
   print('Analysis complete! Results have been written to results.csv.');
 }

@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:peot/git/git_version.dart' as git_version;
-
-import 'composer.dart' as composer;
+import 'git/git.dart' as git;
+import 'composer/composer.dart' as composer;
 
 Future<void> checkRequirements() async {
   print('checking requirements...');
   try {
-    await git_version.version();
+    await git.version();
     await composer.version();
   } on ProcessException catch (e) {
     throw MissingRequirementException(e);

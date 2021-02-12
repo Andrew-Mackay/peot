@@ -21,4 +21,3 @@ Future<void> _checkout(String branchOrCommit, Directory projectLocation) async {
         'git checkout returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
   }
 }
-

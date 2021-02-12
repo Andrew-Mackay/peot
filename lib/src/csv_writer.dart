@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:csv/csv.dart';
-import 'psalm_errors_over_time.dart';
+import 'commits_analyser.dart';
 
 Future<void> writePsalmErrorsOverTimeToCSV(
     Map<DateTime, AnalysisResult> psalmErrorsOverTime) async {
