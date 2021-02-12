@@ -4,7 +4,7 @@ import 'package:path/path.dart' as p;
 
 import 'composer/composer.dart' as composer;
 import 'git/git.dart' as git;
-import 'psalm.dart' as psalm;
+import 'psalm/psalm.dart' as psalm;
 
 Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
   String projectLocation,
@@ -102,7 +102,7 @@ Future<AnalysisResult> _analyseCommit(
     } else {
       // TODO test this condition
       print('Generating psalm.xml...');
-      psalmConfig = await psalm.generateConfigurationFile(projectDirectory);
+      psalmConfig = await psalm.generateConfigFile(projectDirectory);
     }
   }
 
