@@ -12,7 +12,7 @@ Future<Arguments> parseArguments(List<String> arguments) async {
       help: '''
 Path for psalm.xml configuration file.
 If not provided will try to use existing psalm.xml in repository.
-If no psalm.xml found, will initlise new psalm.xml using `psalm --init`
+If no psalm.xml found, will initialise new psalm.xml using `psalm --init`
       ''',
     )
     ..addOption(
