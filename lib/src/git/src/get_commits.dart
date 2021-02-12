@@ -109,8 +109,7 @@ Future<List<Commit>> getAllCommits(DateTime from, DateTime to,
   return gitCommits;
 }
 
-Future<Commit> _getNearestGitCommit(
-    DateTime date, List<Commit> commits) async {
+Future<Commit> _getNearestGitCommit(DateTime date, List<Commit> commits) async {
   for (var commit in commits) {
     if (commit.date == date) {
       return commit;
@@ -121,4 +120,3 @@ Future<Commit> _getNearestGitCommit(
   }
   throw NoCommitsException();
 }
-

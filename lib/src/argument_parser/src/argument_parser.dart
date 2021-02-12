@@ -5,7 +5,6 @@ import 'package:path/path.dart' as p;
 import 'models/arguments.dart';
 import 'generate_parser.dart';
 
-
 Future<Arguments> parseArguments(List<String> arguments) async {
   final parser = generateParser();
 
@@ -16,7 +15,8 @@ Future<Arguments> parseArguments(List<String> arguments) async {
     exit(0);
   }
 
-  var from = results.wasParsed(keys.from) ? DateTime.parse(results[keys.from]) : null;
+  var from =
+      results.wasParsed(keys.from) ? DateTime.parse(results[keys.from]) : null;
   var to = results.wasParsed(keys.to) ? DateTime.parse(results[keys.to]) : null;
   if (from != null && to != null) {
     _validateFromIsBeforeTo(from, to);
@@ -33,8 +33,6 @@ Future<Arguments> parseArguments(List<String> arguments) async {
       results[keys.psalmVersion],
       results.wasParsed(keys.considerAllCommits));
 }
-
-
 
 void _printUsage(String usage) {
   print('''
