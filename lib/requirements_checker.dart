@@ -9,7 +9,6 @@ Future<void> checkRequirements() async {
   try {
     await git_version.version();
     await composer.version();
-    // TODO check or replace find
   } on ProcessException catch (e) {
     throw MissingRequirementException(e);
   }

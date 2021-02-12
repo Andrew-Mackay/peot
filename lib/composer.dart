@@ -28,13 +28,17 @@ Future<void> installComposerBinPlugin(Directory projectLocation) async {
 }
 
 Future<void> removeBrokenSymLinks(Directory projectLocation) async {
-  // TODO replace with dart directory command to remove requirement of find
-  var result = await Process.run(
-      'find', ['./vendor/bin/', '-xtype', 'l', '-delete'],
-      workingDirectory: projectLocation.path);
-  if (result.exitCode != 0) {
-    throw Exception(
-        'removing broken symlinks returned the following exit code ${result.exitCode} with stderr ${result.stderr}');
+  var vendorBinDirectory =
+      Directory(p.join(projectLocation.path, 'vendor', 'bin'));
+  await for (var entity in vendorBinDirectory.list()) {
+    if (entity is Link) {
+      try {
+        entity.resolveSymbolicLinksSync();
+      } on FileSystemException {
+        // broken link
+        entity.deleteSync();
+      }
+    }
   }
 }
 
