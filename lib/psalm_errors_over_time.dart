@@ -4,9 +4,6 @@ import 'package:path/path.dart' as p;
 
 import 'composer.dart' as composer;
 import 'git/git.dart' as git;
-import 'git/git_checkout.dart' as git_checkout;
-import 'git/git_clone.dart' as git_clone;
-import 'models/git_commit.dart';
 import 'psalm.dart' as psalm;
 
 Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
@@ -24,7 +21,7 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
 
   try {
     print('Cloning repository into temporary directory...');
-    await git_clone.clone(projectLocation, temporaryDirectory);
+    await git.clone(projectLocation, temporaryDirectory);
 
     var projectDirectory =
         Directory((await temporaryDirectory.list().first).path);
@@ -58,7 +55,7 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
 }
 
 Future<Map<DateTime, AnalysisResult>> _analyseCommits(
-  List<GitCommit> commits,
+  List<git.Commit> commits,
   Directory projectDirectory,
   File psalmConfigLocation,
   String psalmVersion,
@@ -82,14 +79,14 @@ Future<Map<DateTime, AnalysisResult>> _analyseCommits(
 }
 
 Future<AnalysisResult> _analyseCommit(
-  GitCommit commit,
+  git.Commit commit,
   Directory projectDirectory,
   File psalmConfig,
   String psalmVersion,
 ) async {
   print(
       'Checking out commit ${commit.hash} with date ${commit.date.year}-${commit.date.month}-${commit.date.day}...');
-  await git_checkout.checkoutCommit(commit.hash, projectDirectory);
+  await git.checkoutCommit(commit.hash, projectDirectory);
 
   print('Running composer install...');
   await composer.install(projectDirectory);
@@ -124,7 +121,7 @@ Future<AnalysisResult> _analyseCommit(
 class AnalysisResult {
   final DateTime date;
   final int numberOfErrors;
-  final GitCommit commit;
+  final git.Commit commit;
 
   AnalysisResult(this.date, this.numberOfErrors, this.commit);
 }

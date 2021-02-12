@@ -1,0 +1,1 @@
+class NoCommitsException implements Exception {}
