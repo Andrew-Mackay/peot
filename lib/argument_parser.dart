@@ -5,26 +5,46 @@ import 'package:path/path.dart' as p;
 
 Future<Arguments> parseArguments(List<String> arguments) async {
   final parser = ArgParser()
-    ..addOption('from')
-    ..addOption('to')
+    ..addOption(
+      'from',
+      help: 'Date to start the analysis from in format YYYY-MM-DD. Example: '
+          '2020-02-24.',
+    )
+    ..addOption(
+      'to',
+      help: 'Date to run the analysis until in format YYYY-MM-DD. Example: '
+          '2020-02-24.',
+    )
     ..addOption(
       'psalm-config',
       help: '''
-Path for psalm.xml configuration file.
-If not provided will try to use existing psalm.xml in repository.
-If no psalm.xml found, will initialise new psalm.xml using `psalm --init`
-      ''',
+Path to the desired psalm.xml configuration file. If this argument is not
+provided, the program will check for an existing psalm.xml file in the project
+repository. If no psalm.xml is found in the project repository, a new psalm.xml
+file will be initialised using `psalm --init`.
+''',
     )
     ..addOption(
       'frequency',
-      help: 'How frequently to analyse the project',
+      help: 'How frequently to analyse the project.',
       allowed: frequencyOptions,
       defaultsTo: 'monthly',
     )
     ..addOption(
       'psalm-version',
-      help: 'Psalm version to use',
+      help: 'Which psalm version to use.',
       defaultsTo: '4.1.1',
+    )
+    ..addFlag(
+      'consider-all-commits',
+      abbr: 'a',
+      help: '''
+By default, analysis is only run on merge commits into the main/master branch.
+This is found to give a more accurate insight into the state of the codebase
+over time for projects using some form of branching strategy. Use this flag to
+override this behaviour and instead consider all commits in the analysis.
+''',
+      negatable: false,
     )
     ..addFlag(
       'help',
@@ -39,7 +59,18 @@ If no psalm.xml found, will initialise new psalm.xml using `psalm --init`
   var results = parser.parse(arguments);
 
   if (results.wasParsed('help')) {
-    print(parser.usage);
+    print('''
+peot (psalm errors over time)
+
+Reports the number of static errors in a PHP project over time by running the 
+psalm static code analysis tool.
+
+Usage: peot <git-repository> [args]
+
+Results will be written to results.csv.
+
+${parser.usage}
+''');
     exit(0);
   }
 
@@ -53,18 +84,20 @@ If no psalm.xml found, will initialise new psalm.xml using `psalm --init`
     var fileExtension = p.extension(psalmConfigLocation.path);
     if (fileExtension != '.xml') {
       throw ArgumentError(
-          'Psalm config must be an xml file. Provided file is of type: $fileExtension.');
+        'Psalm config must be an xml file. Provided file is of type: '
+        '$fileExtension.',
+      );
     }
   }
 
   return Arguments(
-    results.rest[0],
-    psalmConfigLocation,
-    results.wasParsed('from') ? DateTime.parse(results['from']) : null,
-    results.wasParsed('to') ? DateTime.parse(results['to']) : null,
-    frequencyOptionToDuration(results['frequency']),
-    results['psalm-version'],
-  );
+      results.rest[0],
+      psalmConfigLocation,
+      results.wasParsed('from') ? DateTime.parse(results['from']) : null,
+      results.wasParsed('to') ? DateTime.parse(results['to']) : null,
+      frequencyOptionToDuration(results['frequency']),
+      results['psalm-version'],
+      results.wasParsed('consider-all-commits'));
 }
 
 const frequencyOptions = {'all', 'daily', 'weekly', 'monthly', 'yearly'};
@@ -92,6 +125,7 @@ class Arguments {
   final DateTime to;
   final Duration frequency;
   final String psalmVersion;
+  final bool considerAllCommits;
 
   Arguments(
     this.projectLocation,
@@ -100,5 +134,6 @@ class Arguments {
     this.to,
     this.frequency,
     this.psalmVersion,
+    this.considerAllCommits,
   );
 }
