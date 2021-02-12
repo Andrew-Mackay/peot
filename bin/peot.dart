@@ -16,6 +16,7 @@ Future<void> main(List<String> arguments) async {
     args.to,
     args.frequency,
     args.psalmVersion,
+    args.considerAllCommits,
   );
 
   await csv_writer.writePsalmErrorsOverTimeToCSV(numberOfErrorsOverTime);

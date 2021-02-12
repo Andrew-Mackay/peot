@@ -16,6 +16,7 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
   DateTime to,
   Duration frequency,
   String psalmVersion,
+  bool considerAllCommits,
 ) async {
   print('Creating temporary directory...');
   var temporaryDirectory =
@@ -39,10 +40,17 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
     }
 
     print('Collecting commits...');
-    var commits = await git.getCommits(from, to, frequency, projectDirectory);
+    var commits = await git.getCommits(
+      from,
+      to,
+      frequency,
+      projectDirectory,
+      considerAllCommits,
+    );
     print('Found ${commits.length} commits\n');
 
-    return (await _analyseCommits(commits, projectDirectory, psalmConfig, psalmVersion));
+    return (await _analyseCommits(
+        commits, projectDirectory, psalmConfig, psalmVersion));
   } finally {
     print('Deleting temporary directory...');
     await temporaryDirectory.delete(recursive: true);
@@ -57,8 +65,8 @@ Future<Map<DateTime, AnalysisResult>> _analyseCommits(
 ) async {
   var psalmErrorsOverTime = <DateTime, AnalysisResult>{};
   for (var commit in commits) {
-    var result =
-        await _analyseCommit(commit, projectDirectory, psalmConfigLocation, psalmVersion);
+    var result = await _analyseCommit(
+        commit, projectDirectory, psalmConfigLocation, psalmVersion);
     psalmErrorsOverTime[result.date] = result;
 
     print('Resetting git branch...');

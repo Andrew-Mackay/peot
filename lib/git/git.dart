@@ -3,8 +3,6 @@ import 'dart:io';
 
 import 'git_commit.dart';
 
-
-
 Future<void> resetGitBranch(Directory projectLocation) async {
   var result = await Process.run('git', ['reset', '--hard'],
       workingDirectory: projectLocation.path);
@@ -14,7 +12,8 @@ Future<void> resetGitBranch(Directory projectLocation) async {
   }
 }
 
-Future<GitCommit> _getNearestGitCommit(DateTime date, List<GitCommit> commits) async {
+Future<GitCommit> _getNearestGitCommit(
+    DateTime date, List<GitCommit> commits) async {
   for (var commit in commits) {
     if (commit.date == date) {
       return commit;
@@ -26,19 +25,20 @@ Future<GitCommit> _getNearestGitCommit(DateTime date, List<GitCommit> commits) a
   throw NoCommitsException();
 }
 
-Future<List<GitCommit>> _getAllCommits(DateTime from, DateTime to, Directory projectLocation) async {
-  var result = await Process.run(
-      'git',
-      [
-        'log',
-        '--merges',
-        '--first-parent',
-        '--after=${from.month}-${from.day}-${from.year}',
-        '--before=${to.month}-${to.day}-${to.year}',
-        '--date=short',
-        '--pretty="%H, %ad"',
-        '--reverse'
-      ],
+Future<List<GitCommit>> _getAllCommits(DateTime from, DateTime to,
+    Directory projectLocation, bool considerAllCommits) async {
+  var arguments = <String>['log'];
+  if (!considerAllCommits) {
+    arguments.addAll(['--merges', '--first-parent']);
+  }
+  arguments.addAll([
+    '--after=${from.month}-${from.day}-${from.year}',
+    '--before=${to.month}-${to.day}-${to.year}',
+    '--date=short',
+    '--pretty="%H, %ad"',
+    '--reverse'
+  ]);
+  var result = await Process.run('git', arguments,
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -57,9 +57,19 @@ Future<List<GitCommit>> _getAllCommits(DateTime from, DateTime to, Directory pro
 
 class NoCommitsException implements Exception {}
 
-Future<List<GitCommit>> getCommits(DateTime from, DateTime to,
-    Duration frequency, Directory projectLocation) async {
-  var allCommits = await _getAllCommits(from, to, projectLocation);
+Future<List<GitCommit>> getCommits(
+  DateTime from,
+  DateTime to,
+  Duration frequency,
+  Directory projectLocation,
+  bool considerAllCommits,
+) async {
+  var allCommits = await _getAllCommits(
+    from,
+    to,
+    projectLocation,
+    considerAllCommits,
+  );
   if (frequency == null) {
     return allCommits;
   }
@@ -78,7 +88,7 @@ Future<List<GitCommit>> getCommits(DateTime from, DateTime to,
 }
 
 Future<GitCommit> getFirstCommit(Directory projectLocation) async {
-   var result = await Process.run(
+  var result = await Process.run(
       'git',
       [
         'log',
@@ -101,7 +111,7 @@ Future<GitCommit> getFirstCommit(Directory projectLocation) async {
 }
 
 Future<GitCommit> getLastCommit(Directory projectLocation) async {
-   var result = await Process.run(
+  var result = await Process.run(
       'git',
       [
         'log',
