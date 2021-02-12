@@ -1,4 +1,4 @@
-import 'package:peot/argument_parser.dart';
+import 'package:peot/argument_parser/argument_parser.dart';
 import 'package:peot/csv_writer.dart' as csv_writer;
 import 'package:peot/psalm_errors_over_time.dart' as psalm_errors_over_time;
 import 'package:peot/requirements_checker.dart';
