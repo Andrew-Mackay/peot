@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'composer.dart' as composer;
+import 'composer/composer.dart' as composer;
 import 'git/git.dart' as git;
 import 'psalm.dart' as psalm;
 
@@ -70,8 +70,6 @@ Future<Map<DateTime, AnalysisResult>> _analyseCommits(
     await git.resetGitBranch(projectDirectory);
     print('Removing composer bin plugin...');
     await composer.removeComposerBinPlugin(projectDirectory);
-    print('Removing broken composer symbolic links...\n');
-    await composer.removeBrokenSymLinks(projectDirectory);
 
     // TODO clear cache?
   }
@@ -92,7 +90,7 @@ Future<AnalysisResult> _analyseCommit(
   await composer.install(projectDirectory);
 
   print('(Composer) Installing bamarni/composer-bin-plugin...');
-  await composer.installComposerBinPlugin(projectDirectory);
+  await composer.requireComposerBinPlugin(projectDirectory);
 
   print('(Composer) Installing psalm...');
   await composer.installPsalm(projectDirectory, psalmVersion);

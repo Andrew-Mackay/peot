@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'git/git.dart' as git;
-
-import 'composer.dart' as composer;
+import 'composer/composer.dart' as composer;
 
 Future<void> checkRequirements() async {
   print('checking requirements...');
