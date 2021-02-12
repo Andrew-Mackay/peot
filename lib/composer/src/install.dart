@@ -1,7 +1,12 @@
 import 'dart:io';
 
 Future<void> install(Directory projectLocation) async {
-  var result = await Process.run('composer', ['install'],
+  var result = await Process.run(
+      'composer',
+      [
+        'install',
+        '--no-scripts',
+      ],
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(

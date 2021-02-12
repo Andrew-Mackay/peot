@@ -8,6 +8,7 @@ Future<void> requireComposerBinPlugin(Directory projectLocation) async {
         '--dev',
         'bamarni/composer-bin-plugin',
         '--ignore-platform-reqs',
+        '--no-scripts',
         '-q'
       ],
       workingDirectory: projectLocation.path);
