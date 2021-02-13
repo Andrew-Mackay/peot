@@ -4,36 +4,52 @@ on:
     tags:
       - "v*"
 jobs:
-  build:
-    name: Compile Application
+  once:
+    name: Create Release
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.output.upload_url }}
+    steps:
+      - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: Release ${{ github.ref }}
+            draft: true
+            prerelease: true
+  build:
+    name: Compile Application and Upload as Release Asset
+    needs: once
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            output-name: peot-linux
+          - os: macOS-latest
+            output-name: peot-mac
+
     steps:
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
+
       - name: Install Dependencies
         run: dart pub get
+
       - name: Compile
-        run: dart compile exe bin/peot.dart -o peot
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - TODO Document changes
-          draft: true
-          prerelease: true
+        run: dart compile exe bin/peot.dart -o ${{ matrix.output-name }}
+      
       - name: Upload Release Asset
         id: upload_release_asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: peot
-          asset_name: peot
+          upload_url: ${{ needs.once.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ${{ matrix.output-name }}
+          asset_name: ${{ matrix.output-name }}
           asset_content_type: application/x-executable
