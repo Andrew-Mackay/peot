@@ -5,7 +5,7 @@ Peot is a command line application used to analyse the number of errors in a PHP
 The target project must use git for version control.
 
 ## Project Status
-// TODO
+This project is in an alpha state. The program does work but it has in no way been thoroughly tested. For now, it works well enough for my use case and so it is unlikely that I will be making any significant changes in the near future. If you do try it out and come across any bugs or have any suggestions I would be interested to know about them so please submit an issue or pull request.
 
 ## Requirements
 - [git](https://git-scm.com/)
@@ -62,7 +62,7 @@ Results will be written to results.csv.
 ```
 
 ## Examples
-The graphing for these examples has been done manually using the data from the outputted results.csv file. Peot does not currently have any in-built graphing support.
+The graphing for these examples was done manually using the data from the outputted results.csv file. Peot does not currently have any in-built graphing support.
 
 ### [Andrew-Mackay/laravel_vue_blog_spa](https://github.com/Andrew-Mackay/laravel-vue-spa-blog)
 ```
