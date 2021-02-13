@@ -62,9 +62,14 @@ Results will be written to results.csv.
 ```
 
 ## Examples
-Graphing of data has been done manually using google sheets
+The graphing for these examples has been done manually using the data from the outputted results.csv file. Peot does not currently have any in-built graphing support.
 
-// TODO
+### [Andrew-Mackay/laravel_vue_blog_spa](https://github.com/Andrew-Mackay/laravel-vue-spa-blog)
+```
+./peot git@github.com:Andrew-Mackay/laravel-vue-spa-blog.git --to 2019-09-30 --frequency weekly -a
+```
+
+![Peot Results for Andrew-Mackay_laravel_vue_blog_spa](https://user-images.githubusercontent.com/22844315/107846848-fe353800-6dde-11eb-9873-b43485a6e66b.png)
 
 ## License
 [MIT](LICENSE)
