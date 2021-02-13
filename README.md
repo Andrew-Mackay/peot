@@ -12,19 +12,27 @@ The target project must use git for version control.
 - [composer installed globally](https://getcomposer.org/doc/00-intro.md#globally)
 
 ## Installation
-Option 1 (recommended): Download the latest [release](https://github.com/Andrew-Mackay/peot/releases).
-
-Option 2: Download the repository and compile yourself. Instructions on how to do this can be found [here](https://dart.dev/tutorials/server/get-started#6-compile-for-production).
-
-Option 3: Download the repository and run using the Dart VM. 
+Option 1 (recommended): Download the project and compile yourself.
 ```
-dart bin/peot.dart
+dart pub get
+dart compile exe bin/peot.dart -o peot
+./peot -h
 ```
 
+Option 2: Download the repository and run using the Dart VM. 
+```
+dart pub get
+dart bin/peot.dart -h
+```
+
+Option 3: Download a pre-compiled executable from the latest [release](https://github.com/Andrew-Mackay/peot/releases). I provide no guarantee on compatibility.
+```
+./peot -h
+```
 
 ## Usage
 ```
-$ peot -h
+./peot -h
 
 peot (psalm errors over time)
 
