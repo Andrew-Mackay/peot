@@ -24,12 +24,18 @@ Future<Map<DateTime, AnalysisResult>> getPsalmErrorsOverTime(
         Directory((await temporaryDirectory.list().first).path);
 
     if (from == null) {
-      var firstCommit = await git.getFirstCommit(projectDirectory);
+      var firstCommit = await git.getFirstCommit(
+        projectDirectory,
+        considerAllCommits,
+      );
       from = firstCommit.date;
     }
 
     if (to == null) {
-      var lastCommit = await git.getLastCommit(projectDirectory);
+      var lastCommit = await git.getLastCommit(
+        projectDirectory,
+        considerAllCommits,
+      );
       to = lastCommit.date;
     }
 
