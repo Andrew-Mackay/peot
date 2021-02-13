@@ -33,17 +33,21 @@ Future<List<Commit>> getCommits(
   return commits.toList();
 }
 
-Future<Commit> getFirstCommit(Directory projectLocation) async {
-  var result = await Process.run(
-      'git',
-      [
-        'log',
-        '--merges',
-        '--first-parent',
-        '--reverse',
-        '--date=short',
-        '--pretty="%H, %ad"',
-      ],
+Future<Commit> getFirstCommit(
+    Directory projectLocation, bool considerAllCommits) async {
+  var arguments = <String>['log'];
+  if (!considerAllCommits) {
+    arguments.addAll([
+      '--merges',
+      '--first-parent',
+    ]);
+  }
+  arguments.addAll([
+    '--reverse',
+    '--date=short',
+    '--pretty="%H, %ad"',
+  ]);
+  var result = await Process.run('git', arguments,
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -56,18 +60,22 @@ Future<Commit> getFirstCommit(Directory projectLocation) async {
   return commitFromStdOut(firstLine);
 }
 
-Future<Commit> getLastCommit(Directory projectLocation) async {
-  var result = await Process.run(
-      'git',
-      [
-        'log',
-        '--merges',
-        '--first-parent',
-        '-n',
-        '1',
-        '--date=short',
-        '--pretty="%H, %ad"',
-      ],
+Future<Commit> getLastCommit(
+    Directory projectLocation, bool considerAllCommits) async {
+  var arguments = <String>['log'];
+  if (!considerAllCommits) {
+    arguments.addAll([
+      '--merges',
+      '--first-parent',
+    ]);
+  }
+  arguments.addAll([
+    '-n',
+    '1',
+    '--date=short',
+    '--pretty="%H, %ad"',
+  ]);
+  var result = await Process.run('git', arguments,
       workingDirectory: projectLocation.path);
   if (result.exitCode != 0) {
     throw Exception(
@@ -83,7 +91,10 @@ Future<List<Commit>> getAllCommits(DateTime from, DateTime to,
     Directory projectLocation, bool considerAllCommits) async {
   var arguments = <String>['log'];
   if (!considerAllCommits) {
-    arguments.addAll(['--merges', '--first-parent']);
+    arguments.addAll([
+      '--merges',
+      '--first-parent',
+    ]);
   }
   arguments.addAll([
     '--after=${from.month}-${from.day}-${from.year}',
